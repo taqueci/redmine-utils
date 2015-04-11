@@ -64,7 +64,7 @@ Print this help.
 
 =head1 EXAMPLE
 
-    r-user-add.pl --rul=http://www.gnr.com/redmine \
+    r-user-add.pl --url=http://www.gnr.com/redmine \
         --key=0123456789abcdef0123456789abcdef01234567 \
         --auth-source-id=3 --mail-notification=none \
         a.rose Axl Rose a.rose@gnr.com
@@ -92,19 +92,22 @@ use Pod::Usage;
 use URI::URL;
 
 my $PROGRAM = basename $0;
+my $ENCODING = ($^O eq 'MSWin32') ? 'cp932' : 'utf-8';
 
 my $p_message_prefix = "";
 my $p_log_file;
 my $p_is_verbose = 0;
+my $p_encoding = 'utf-8';
 
 p_set_message_prefix("$PROGRAM: ");
 
-my %opt = (url => 'http://localhost', encoding => 'utf-8');
+my %opt = (url => 'http://localhost', encoding => $ENCODING);
 GetOptions(\%opt, 'url=s', 'key=s', 'redmine-user=s', 'redmine-password=s',
 		   'password|p=s', 'auth-source-id|a=i', 'mail-notification|m=s',
 		   'must-change-passwd|c', 'encoding|e=s',
 		   'log|l=s', 'verbose', 'help') or exit 1;
 
+p_set_encoding($opt{encoding});
 p_set_log($opt{log}) if defined $opt{log};
 p_set_verbose(1) if $opt{verbose};
 
@@ -160,9 +163,16 @@ sub p_log {
 
 	return unless defined $p_log_file;
 
-	open my $fh, '>>', $p_log_file or die "$p_log_file: $!\n";
+	open my $fh, ">>:encoding($p_encoding)", $p_log_file or
+		die "$p_log_file: $!\n";
 	print $fh @msg, "\n";
 	close $fh;
+}
+
+sub p_set_encoding {
+	$p_encoding = shift;
+
+	binmode STDERR, ":encoding($p_encoding)";
 }
 
 sub p_set_message_prefix {
@@ -227,11 +237,7 @@ sub _user_xml {
 	push @x,
 	"</user>";
 
-	my $xml = join("\n", @x) . "\n";
-
-	p_log(encode($encoding, $xml));
-
-	return $xml;
+	return join("\n", @x) . "\n";
 }
 
 sub _add_user {
@@ -252,13 +258,15 @@ sub _add_user {
 								  $passwd // _read_stdin('Password: '));
 	}
 
-	p_log("Acessing to $url");
+	p_log(decode('utf-8', $req->as_string));
 
 	my $agent = LWP::UserAgent->new();
 	my $resp = $agent->request($req);
 
+	p_log(decode('utf-8', $resp->as_string));
+
 	unless ($resp->is_success) {
-		p_error($resp->status_line);
+		p_error(decode('utf-8', $resp->status_line));
 		return 0;
 	}
 
