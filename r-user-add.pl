@@ -90,6 +90,7 @@ use HTTP::Request;
 use LWP::UserAgent;
 use Pod::Usage;
 use URI::URL;
+use XML::Simple;
 
 my $PROGRAM = basename $0;
 my $ENCODING = ($^O eq 'MSWin32') ? 'cp932' : 'utf-8';
@@ -266,7 +267,13 @@ sub _add_user {
 	p_log(decode('utf-8', $resp->as_string));
 
 	unless ($resp->is_success) {
-		p_error(decode('utf-8', $resp->status_line));
+		my @msg = ($resp->code == 422) ? _error_message($resp->content) :
+			(decode('utf-8', $resp->status_line));
+
+		foreach my $m (@msg) {
+			p_error($m);
+		}
+
 		return 0;
 	}
 
@@ -280,4 +287,12 @@ sub _read_stdin {
 	chomp $input;
 
 	return $input;
+}
+
+sub _error_message {
+	my $content = shift;
+
+	my $xs = XMLin($content, ForceArray => 1);
+
+	return @{$xs->{error}};
 }
