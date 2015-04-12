@@ -119,12 +119,12 @@ pod2usage(-exitval => 0, -verbose => 2, -noperldoc => 1) if $opt{help};
 my ($login, $fname, $lname, $mail) = @ARGV;
 
 my $xml = _user_xml($login, $fname, $lname, $mail, $opt{password},
-					$opt{'auth-source_id'}, $opt{'mail-notification'},
+					$opt{'auth-source-id'}, $opt{'mail-notification'},
 					$opt{'must-change-passwd'}, $opt{encoding});
 
 p_verbose("Adding user $login");
 _add_user($xml, $opt{url}, $opt{key},
-		  $opt{'redmine-user'}, $opt{'redmine-passowrd'}) or exit 1;
+		  $opt{'redmine-user'}, $opt{'redmine-password'}) or exit 1;
 
 p_verbose("Completed!\n");
 
