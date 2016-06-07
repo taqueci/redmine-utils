@@ -5,7 +5,7 @@ Perl scripts for Redmine
 Creates a new Redmine user.
 
 ## r-wiki.php
-Show a wiki page.
+Shows a wiki page.
 
 ### Usage
-Set URL and KEY with suitable values.
+Set constants (URL, PREFIX, ...) with suitable values.
