@@ -66,9 +66,7 @@ function wiki_html($page, $index) {
 }
 
 function print_content($file) {
-    $p = PREFIX . '/attachments/';
-
-    if (!preg_match("@^$p@", $file)) exit;
+    if (!is_valid_path($file)) exit;
 
     $content = file_get_contents(URL . "$file?key=" . KEY);
 
@@ -77,7 +75,14 @@ function print_content($file) {
     header('Content-Type: ' . $finfo->buffer($content));
     header('Content-Disposition: attachment; filename*=UTF-8\'\''
     . rawurlencode(basename($file)));
+
     print $content;
+}
+
+function is_valid_path($path) {
+    $p = PREFIX . '/attachments/';
+
+    return preg_match("@^$p@", $path) && !preg_match("@/\.\.@", $path);
 }
 
 ?>
