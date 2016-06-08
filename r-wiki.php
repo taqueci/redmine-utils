@@ -75,6 +75,8 @@ function print_content($file) {
     $finfo = new finfo(FILEINFO_MIME_TYPE);
 
     header('Content-Type: ' . $finfo->buffer($content));
+    header('Content-Disposition: attachment; filename*=UTF-8\'\''
+    . rawurlencode(basename($file)));
     print $content;
 }
 
